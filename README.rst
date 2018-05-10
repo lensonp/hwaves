@@ -1,5 +1,5 @@
-hydrowaves: Python modules for computing and plotting hydrogenic wavefunctions 
-==============================================================================
+hwaves: Python modules for computing and plotting hydrogenic wavefunctions 
+==========================================================================
 
 
 Description
@@ -9,6 +9,7 @@ This package was written to provide a clean and concise way
 for non-programmers to compute and plot hydrogenic wavefunctions.
 It is intended to be used by scientists and researchers
 with some knowledge of quantum chemistry.
+It is very scrappy, and gets very little attention.
 
 Example
 -------
