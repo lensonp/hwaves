@@ -9,17 +9,19 @@ This package was written to provide a clean and concise way
 for non-programmers to compute and plot hydrogenic wavefunctions.
 It is intended to be used by scientists and researchers
 with some knowledge of quantum chemistry.
-It is very scrappy, and gets very little attention.
+
 
 Example
 -------
 
 TODO: fill out example. 
 
+
 Installation
 ------------
 
-This package is hosted on PyPI. Install it by `pip install hydrowaves`.
+This package is hosted on PyPI. Install it by `pip install hwaves`.
+
 
 License
 -------
