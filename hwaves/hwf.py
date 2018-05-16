@@ -1,16 +1,11 @@
 import os
 
 import numpy as np
-from scipy import special
 from scipy.special import sph_harm 
 from scipy.special import genlaguerre 
 from scipy.misc import factorial as fact
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D 
 from masstable import Table
 import periodictable as pt
-from mayavi import mlab
 
 bohr_rad_A = 0.529177       #Angstrom
 elec_mass_amu = 5.485799090 #amu
@@ -40,23 +35,6 @@ def spherical_harmonic(theta,phi,l,m):
     th, ph = np.meshgrid(theta,phi)
     Ylm = sph_harm(m,l,th,ph)
     return Ylm
-
-def plot_spherical_harmonic(theta,phi,l,m):
-    Ylm = spherical_harmonic(theta,phi,l,m)
-    th, ph = np.meshgrid(theta,phi)
-    sph_amp = np.abs(Ylm * np.conj(Ylm))
-    x_amp = sph_amp * np.sin(ph) * np.cos(th)
-    y_amp = sph_amp * np.sin(ph) * np.sin(th)
-    z_amp = sph_amp * np.cos(ph)
-
-    fig = plt.figure()
-    #ax = Axes3D(fig)
-    ax = fig.add_subplot(111,projection='3d')
-    ax.plot_surface(x_amp, y_amp, z_amp,
-    rstride=1, cstride=1, cmap=plt.get_cmap('jet'),
-    linewidth=0, antialiased=False, alpha=0.5)
-    plt.show()
-    #fig.savefig(savedir+'/Y{}{}.png'.format(l,m))
 
 def radial_wf(r_A,n,l,Z_prot,N_neut):
     """Get wavefunction values wrt radial distance from the nucleus.
@@ -106,45 +84,28 @@ def radial_wf(r_A,n,l,Z_prot,N_neut):
     * (2*Zr_a_mu/n)**l 
     * lag_of_r)
 
-    # Rnlsqr has units Angstrom^(-3)
+    # Rnlsqr has units Angstrom^(-3): density per volume 
     Rnlsqr = Rnl * Rnl
 
-    # Pnl has units Angstrom^(-1)
+    # Pnl has units Angstrom^(-1): spherical-shell integrated density per radius
     Pnl = Rnlsqr * 4 * np.pi * r_A**2  
     #Pnlsum = np.sum(Pnl) * max(r_A) / len(r_A)
     #print 'integral of Pnl: {}'.format(Pnlsum)
 
     return Rnl
 
-def plot_radial_wf(r_A,n,l,Z_prot,N_neut):
-
-    Rnl = radial_wf(r_A,n,l,Z_prot,N_neut)
-    Rnlsqr = Rnl * Rnl
-    Pnl = Rnlsqr * 4 * np.pi * r_A**2 
-
-    fig = plt.figure()
-    ax = fig.gca()
-    ax.plot(Z*r_A,Rnl)
-    ax.set_xlabel('Z*r (Angstrom)')
-    ax.set_ylabel('Rnl')
-    #fig.savefig(savedir+'/R{}{}.png'.format(n,l))
-    #np.savetxt(savedir+'/R{}{}.csv'.format(n,l),np.array([Z*r_A,Rnl]),header='Z*r (Angstrom), Rnl') 
-
-    fig = plt.figure()
-    ax = fig.gca()
-    ax.plot(Z*r_A,Rnlsqr)
-    ax.set_xlabel('Z*r (Angstrom)')
-    ax.set_ylabel('Rnl**2')
-    #fig.savefig(savedir+'/R{}{}squared.png'.format(n,l))
-    #np.savetxt(savedir+'/R{}{}squared.csv'.format(n,l),np.array([Z*r_A,Rnlsqr]),header='Z*r (Angstrom), Rnl*Rnl') 
-
-    fig = plt.figure()
-    ax = fig.gca()
-    ax.plot(Z*r_A,Pnl)
-    ax.set_xlabel('Z*r (Angstrom)')
-    ax.set_ylabel('Pnl')
-    #fig.savefig(savedir+'/P{}{}.png'.format(n,l))
-    #np.savetxt(savedir+'/P{}{}.csv'.format(n,l),np.array([Z*r_A,Pnl]),header='Z*r (Angstrom), Rnl*Rnl*4*pi*r*r') 
-
-    plt.show()
+def psi_xyz(x,y,z,Z,lag=None,n=1,l=0):
+    # TODO: is this vectorized? 
+    if not lag:
+        lag = genlaguerre(n-l-1,2*l+1)
+    r = np.sqrt(x**2+y**2+z**2)
+    Zr_a0 = Z*r/bohr_rad_A
+    lag_of_r = lag(2*Zr_a0/n)
+    Rnl = np.sqrt( (2*Z/float(n*bohr_rad_A))**3 * fact(n-l-1) / (2*n*fact(n+l)) ) \
+            * np.exp(-1*Zr_a0/n) * (2*Zr_a0/n)**l * lag_of_r
+    th = np.arctan(y/x)
+    ph = np.arctan(np.sqrt(x**2+y**2)/z)
+    th_grid, ph_grid = np.meshgrid(th,ph)
+    Ylm = sph_harm(m,l,th_grid,ph_grid) 
+    return Rnl * Ylm
 
