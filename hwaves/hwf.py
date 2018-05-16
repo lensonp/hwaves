@@ -4,8 +4,8 @@ import numpy as np
 from scipy.special import sph_harm 
 from scipy.special import genlaguerre 
 from scipy.misc import factorial as fact
-from masstable import Table
-import periodictable as pt
+#from masstable import Table
+#import periodictable as pt
 
 bohr_rad_A = 0.529177       #Angstrom
 elec_mass_amu = 5.485799090 #amu
@@ -36,7 +36,7 @@ def spherical_harmonic(theta,phi,l=0,m=0):
     Ylm = sph_harm(m,l,th,ph)
     return Ylm
 
-def radial_wf(r_A,Z_prot,N_neut,n,l):
+def radial_wf(r_A,Z,N_neut,n,l):
     """Get wavefunction values wrt radial distance from the nucleus.
 
     Parameters
@@ -44,7 +44,7 @@ def radial_wf(r_A,Z_prot,N_neut,n,l):
     r_A : array of float
         array of radial points (in Angstroms)
         at which the wavefunction will be computed
-    Z_prot : int
+    Z : int
         number of protons in the nucleus
     N_neut : int
         number of neutrons in the nucleus

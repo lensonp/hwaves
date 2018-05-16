@@ -6,12 +6,12 @@ from scipy.special import sph_harm
 from scipy.special import genlaguerre 
 from scipy.misc import factorial as fact
 
-from hwf import psi_xyz, bohr_rad_A, elec_mass_amu
+from .hwf import psi_xyz, bohr_rad_A, elec_mass_amu
 
 def cartesian_density(nx,ny,nz,dx,dy,dz,Z=1,n=1,l=0,m=0):
-    x = range(nx)*dx - (nx-1)*dx/2
-    y = range(ny)*dy - (ny-1)*dy/2
-    z = range(nz)*dz - (nz-1)*dz/2
+    x = np.arange(nx)*dx - (nx-1)*dx/2
+    y = np.arange(ny)*dy - (ny-1)*dy/2
+    z = np.arange(nz)*dz - (nz-1)*dz/2
     vol = dx * dy * dz
     xabs = np.abs(x)
     yabs = np.abs(y)
@@ -29,10 +29,10 @@ def cartesian_density(nx,ny,nz,dx,dy,dz,Z=1,n=1,l=0,m=0):
     PV_cart = np.array(P_cart*vol,dtype=float)
     # TODO: a more sophisticated voxel integration? 
     ijk_xyz_PV = []
-    for ix,Zxi in enumerate(Zx_A):
-        for iy,Zyi in enumerate(Zy_A):
-            for iz,Zzi in enumerate(Zz_A):
-                ijk_xyz_PV.append([x_idx[ix],y_idx[iy],z_idx[iz],Zxi,Zyi,Zzi,PV_cart[ix,iy,iz]])
+    for ix,Zxi in enumerate(Zx):
+        for iy,Zyi in enumerate(Zy):
+            for iz,Zzi in enumerate(Zz):
+                ijk_xyz_PV.append([ix,iy,iz,Zxi,Zyi,Zzi,PV_cart[ix,iy,iz]])
     return ijk_xyz_PV
 
 def spherical_density(r_max_A=3,nr=100,ntheta=72,nphi=36,Z=1,n=1,l=0,m=0):
@@ -77,7 +77,6 @@ def spherical_density(r_max_A=3,nr=100,ntheta=72,nphi=36,Z=1,n=1,l=0,m=0):
     # total wavefunction: psi(r,theta,psi) = Rnl(r)*Ylm(theta,psi)
     psi = np.zeros(shape=(len(r_A),len(th_deg),len(ph_deg)),dtype=complex) 
     V_r_th_ph = np.zeros(shape=(len(r_A),len(th_deg),len(ph_deg)),dtype=float) 
-    print 'computing in spherical coords...'
     for ir in range(len(r_A)):
         psi[ir,:,:] = Ylm.T * Rnl[ir]
         Zri_center = Zr_A[ir]
@@ -94,4 +93,6 @@ def spherical_density(r_max_A=3,nr=100,ntheta=72,nphi=36,Z=1,n=1,l=0,m=0):
                 r_th_ph_PV.append([Zri,thi,phi,PV_spherical[ir,ith,iph]]) 
     return r_th_ph_PV
 
+def write_cartesian(ijk_xyz_PV,fpath):
+    np.savetxt(fpath,np.array(ijk_xyz_PV),fmt='%i, %i, %i, %.3e, %.3e, %.3e, %.12e',header='ix, iy, iz, x [A], y [A], z [A], PV [e]')
 

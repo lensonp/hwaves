@@ -3,12 +3,12 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
-from hwf import spherical_harmonic, radial_wf
+from .hwf import spherical_harmonic, radial_wf
 
 bohr_rad_A = 0.529177       #Angstrom
 elec_mass_amu = 5.485799090 #amu
 
-def plot_spherical_harmonic(theta,phi,l,m):
+def plot_spherical_harmonic(theta,phi,l=0,m=0):
     Ylm = spherical_harmonic(theta,phi,l,m)
     th, ph = np.meshgrid(theta,phi)
     sph_amp = np.abs(Ylm * np.conj(Ylm))
@@ -22,10 +22,12 @@ def plot_spherical_harmonic(theta,phi,l,m):
     rstride=1, cstride=1, cmap=plt.get_cmap('jet'),
     linewidth=0, antialiased=False, alpha=0.5)
     plt.show()
+    return fig
 
-def plot_radial_wf(r_A,n,l,Z_prot,N_neut):
 
-    Rnl = radial_wf(r_A,Z_prot,N_neut,n,l)
+def plot_radial_wf(r_A,Z=1,N_neut=0,n=1,l=0,showplot=False):
+
+    Rnl = radial_wf(r_A,Z,N_neut,n,l)
     Rnlsqr = Rnl * Rnl
     Pnl = Rnlsqr * 4 * np.pi * r_A**2 
 
@@ -34,24 +36,31 @@ def plot_radial_wf(r_A,n,l,Z_prot,N_neut):
     ax.plot(Z*r_A,Rnl)
     ax.set_xlabel('Z*r (Angstrom)')
     ax.set_ylabel('Rnl')
-    #fig.savefig(savedir+'/R{}{}.png'.format(n,l))
-    #np.savetxt(savedir+'/R{}{}.csv'.format(n,l),np.array([Z*r_A,Rnl]),header='Z*r (Angstrom), Rnl') 
 
     fig = plt.figure()
     ax = fig.gca()
     ax.plot(Z*r_A,Rnlsqr)
     ax.set_xlabel('Z*r (Angstrom)')
     ax.set_ylabel('Rnl**2')
-    #fig.savefig(savedir+'/R{}{}squared.png'.format(n,l))
-    #np.savetxt(savedir+'/R{}{}squared.csv'.format(n,l),np.array([Z*r_A,Rnlsqr]),header='Z*r (Angstrom), Rnl*Rnl') 
 
     fig = plt.figure()
     ax = fig.gca()
     ax.plot(Z*r_A,Pnl)
     ax.set_xlabel('Z*r (Angstrom)')
     ax.set_ylabel('Pnl')
-    #fig.savefig(savedir+'/P{}{}.png'.format(n,l))
-    #np.savetxt(savedir+'/P{}{}.csv'.format(n,l),np.array([Z*r_A,Pnl]),header='Z*r (Angstrom), Rnl*Rnl*4*pi*r*r') 
 
-    plt.show()
+    if showplot:
+        plt.show()
+    return fig
+
+def plot_isosurface():
+    # TODO: take volumetric data, plot a surface
+    pass
+
+def plot_scatter():
+    # TODO: take volumetric data, plot a 3d scatter
+    pass
+
+
+
 
