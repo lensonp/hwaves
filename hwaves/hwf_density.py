@@ -8,7 +8,7 @@ from scipy.misc import factorial as fact
 
 from hwf import psi_xyz, bohr_rad_A, elec_mass_amu
 
-def cartesian_density(n,l,m,nx,ny,nz,dx,dy,dz,Z=1,n=1,l=0):
+def cartesian_density(nx,ny,nz,dx,dy,dz,Z=1,n=1,l=0,m=0):
     x = range(nx)*dx - (nx-1)*dx/2
     y = range(ny)*dy - (ny-1)*dy/2
     z = range(nz)*dz - (nz-1)*dz/2
@@ -22,7 +22,7 @@ def cartesian_density(n,l,m,nx,ny,nz,dx,dy,dz,Z=1,n=1,l=0):
     # generalized laguerre poly for n,l:
     lagpoly = genlaguerre(n-l-1,2*l+1)
     # wavefunction value array
-    psi_cart = np.array([psi_xyz(xi,yabs,zabs,Z,lagpoly) for xi in xabs])
+    psi_cart = np.array([psi_xyz(xi,yabs,zabs,Z,lagpoly,n,l,m) for xi in xabs])
     # evaluate at voxel center
     P_cart = np.array(np.abs(psi_cart*np.conj(psi_cart)),dtype=float)
     # multiply by voxel volume
@@ -35,7 +35,7 @@ def cartesian_density(n,l,m,nx,ny,nz,dx,dy,dz,Z=1,n=1,l=0):
                 ijk_xyz_PV.append([x_idx[ix],y_idx[iy],z_idx[iz],Zxi,Zyi,Zzi,PV_cart[ix,iy,iz]])
     return ijk_xyz_PV
 
-def spherical_density(n,l,m,r_max_A=3,nr=100,ntheta=72,nphi=36,Z=1):
+def spherical_density(r_max_A=3,nr=100,ntheta=72,nphi=36,Z=1,n=1,l=0,m=0):
 
     dtheta = 360./ntheta
     dphi = 180./nphi

@@ -25,7 +25,7 @@ def plot_spherical_harmonic(theta,phi,l,m):
 
 def plot_radial_wf(r_A,n,l,Z_prot,N_neut):
 
-    Rnl = radial_wf(r_A,n,l,Z_prot,N_neut)
+    Rnl = radial_wf(r_A,Z_prot,N_neut,n,l)
     Rnlsqr = Rnl * Rnl
     Pnl = Rnlsqr * 4 * np.pi * r_A**2 
 

@@ -10,7 +10,7 @@ import periodictable as pt
 bohr_rad_A = 0.529177       #Angstrom
 elec_mass_amu = 5.485799090 #amu
 
-def spherical_harmonic(theta,phi,l,m):
+def spherical_harmonic(theta,phi,l=0,m=0):
     """Compute values of a spherical harmonic function.
 
     Parameters
@@ -36,7 +36,7 @@ def spherical_harmonic(theta,phi,l,m):
     Ylm = sph_harm(m,l,th,ph)
     return Ylm
 
-def radial_wf(r_A,n,l,Z_prot,N_neut):
+def radial_wf(r_A,Z_prot,N_neut,n,l):
     """Get wavefunction values wrt radial distance from the nucleus.
 
     Parameters
@@ -44,14 +44,14 @@ def radial_wf(r_A,n,l,Z_prot,N_neut):
     r_A : array of float
         array of radial points (in Angstroms)
         at which the wavefunction will be computed
-    n : int
-        principal quantum number
-    l : int
-        angular momentum quantum number
     Z_prot : int
         number of protons in the nucleus
     N_neut : int
         number of neutrons in the nucleus
+    n : int
+        principal quantum number
+    l : int
+        angular momentum quantum number
 
     Returns
     ------- 
@@ -94,7 +94,7 @@ def radial_wf(r_A,n,l,Z_prot,N_neut):
 
     return Rnl
 
-def psi_xyz(x,y,z,Z,lag=None,n=1,l=0):
+def psi_xyz(x,y,z,Z,lag=None,n=1,l=0,m=0):
     # TODO: is this vectorized? 
     if not lag:
         lag = genlaguerre(n-l-1,2*l+1)
