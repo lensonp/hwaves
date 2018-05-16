@@ -1,2 +1,6 @@
 *.pyc
+*.csv
+*.txt
+*.dat
+*.png
 .pytest_cache
