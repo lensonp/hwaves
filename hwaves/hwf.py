@@ -98,14 +98,15 @@ def psi_xyz(x,y,z,Z,lag=None,n=1,l=0,m=0):
     # TODO: is this vectorized? 
     if not lag:
         lag = genlaguerre(n-l-1,2*l+1)
-    r = np.sqrt(x**2+y**2+z**2)
-    Zr_a0 = Z*r/bohr_rad_A
+    x_grid, y_grid, z_grid = np.meshgrid(x,y,z)
+    r_grid = np.sqrt(x_grid**2+y_grid**2+z_grid**2)
+    Zr_a0 = Z*r_grid/bohr_rad_A
     lag_of_r = lag(2*Zr_a0/n)
     Rnl = np.sqrt( (2*Z/float(n*bohr_rad_A))**3 * fact(n-l-1) / (2*n*fact(n+l)) ) \
             * np.exp(-1*Zr_a0/n) * (2*Zr_a0/n)**l * lag_of_r
-    th = np.arctan(y/x)
-    ph = np.arctan(np.sqrt(x**2+y**2)/z)
-    th_grid, ph_grid = np.meshgrid(th,ph)
+    th_grid = np.arctan(y_grid/x_grid)
+    ph_grid = np.arctan(np.sqrt(x_grid**2+y_grid**2)/z_grid)
+    #th_grid, ph_grid = np.meshgrid(th,ph)
     Ylm = sph_harm(m,l,th_grid,ph_grid) 
     return Rnl * Ylm
 

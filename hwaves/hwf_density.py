@@ -16,13 +16,14 @@ def cartesian_density(nx,ny,nz,dx,dy,dz,Z=1,n=1,l=0,m=0):
     xabs = np.abs(x)
     yabs = np.abs(y)
     zabs = np.abs(z)
-    Zx = Z*x
-    Zy = Z*y
-    Zz = Z*z
     # generalized laguerre poly for n,l:
     lagpoly = genlaguerre(n-l-1,2*l+1)
     # wavefunction value array
-    psi_cart = np.array([psi_xyz(xi,yabs,zabs,Z,lagpoly,n,l,m) for xi in xabs])
+    #psi_cart = np.array([psi_xyz(xi,yabs,zabs,Z,lagpoly,n,l,m) for xi in xabs])
+    psi_cart = psi_xyz(xabs,yabs,zabs,Z,lagpoly,n,l,m)
+    Zx = Z*x
+    Zy = Z*y
+    Zz = Z*z
     # evaluate at voxel center
     P_cart = np.array(np.abs(psi_cart*np.conj(psi_cart)),dtype=float)
     # multiply by voxel volume
@@ -94,5 +95,5 @@ def spherical_density(r_max_A=3,nr=100,ntheta=72,nphi=36,Z=1,n=1,l=0,m=0):
     return r_th_ph_PV
 
 def write_cartesian(ijk_xyz_PV,fpath):
-    np.savetxt(fpath,np.array(ijk_xyz_PV),fmt='%i, %i, %i, %.3e, %.3e, %.3e, %.12e',header='ix, iy, iz, x [A], y [A], z [A], PV [e]')
+    np.savetxt(fpath,np.array(ijk_xyz_PV),fmt='%i, %i, %i, %.3e, %.3e, %.3e, %.12e',header='ix, iy, iz, Z*x [A], Z*y [A], Z*z [A], PV [e]')
 
