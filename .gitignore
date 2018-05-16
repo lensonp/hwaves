@@ -3,4 +3,5 @@
 *.txt
 *.dat
 *.png
+*.swp
 .pytest_cache
