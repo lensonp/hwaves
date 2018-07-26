@@ -6,37 +6,38 @@ from scipy.special import sph_harm
 from scipy.special import genlaguerre 
 from scipy.misc import factorial as fact
 
-from .hwf import psi_xyz, bohr_rad_A, elec_mass_amu
+from .hwf import real_wf_xyz, psi_xyz, radial_wf, bohr_rad_A, elec_mass_amu
 
-def cartesian_density(nx,ny,nz,dx,dy,dz,Z=1,n=1,l=0,m=0):
-    x = np.arange(nx)*dx - (nx-1)*dx/2
-    y = np.arange(ny)*dy - (ny-1)*dy/2
-    z = np.arange(nz)*dz - (nz-1)*dz/2
+def real_wf_cartesian_density(designation,nx,ny,nz,dx,dy,dz,Z=1,N_neut=0):
     vol = dx * dy * dz
-    xabs = np.abs(x)
-    yabs = np.abs(y)
-    zabs = np.abs(z)
-    # generalized laguerre poly for n,l:
-    lagpoly = genlaguerre(n-l-1,2*l+1)
-    # wavefunction value array
-    #psi_cart = np.array([psi_xyz(xi,yabs,zabs,Z,lagpoly,n,l,m) for xi in xabs])
-    psi_cart = psi_xyz(xabs,yabs,zabs,Z,lagpoly,n,l,m)
-    Zx = Z*x
-    Zy = Z*y
-    Zz = Z*z
+    x_grid, y_grid, z_grid = voxel_center_grid(nx,ny,nz,dx,dy,dz)
+    psi_cart = real_wf_xyz(designation,x_grid,y_grid,z_grid,Z,N_neut)
+    P_cart = np.array(np.abs(psi_cart*np.conj(psi_cart)),dtype=float)
+    # multiply by voxel volume
+    PV_cart = np.array(P_cart*vol,dtype=float)
+    return x_grid, y_grid, z_grid, PV_cart
+
+def cartesian_density(n,l,m,nx,ny,nz,dx,dy,dz,Z=1,N_neut=0):
+    vol = dx * dy * dz
+    x_grid, y_grid, z_grid = voxel_center_grid(nx,ny,nz,dx,dy,dz)
+    psi_cart = psi_xyz(n,l,m,x_grid,y_grid,z_grid,Z,N_neut)
     # evaluate at voxel center
     P_cart = np.array(np.abs(psi_cart*np.conj(psi_cart)),dtype=float)
     # multiply by voxel volume
     PV_cart = np.array(P_cart*vol,dtype=float)
-    # TODO: a more sophisticated voxel integration? 
-    ijk_xyz_PV = []
-    for ix,Zxi in enumerate(Zx):
-        for iy,Zyi in enumerate(Zy):
-            for iz,Zzi in enumerate(Zz):
-                ijk_xyz_PV.append([ix,iy,iz,Zxi,Zyi,Zzi,PV_cart[ix,iy,iz]])
-    return ijk_xyz_PV
+    return x_grid, y_grid, z_grid, PV_cart
 
-def spherical_density(r_max_A=3,nr=100,ntheta=72,nphi=36,Z=1,n=1,l=0,m=0):
+def voxel_center_grid(nx,ny,nz,dx,dy,dz):
+    x = np.arange(nx)*dx - (nx-1)*dx/2
+    y = np.arange(ny)*dy - (ny-1)*dy/2
+    z = np.arange(nz)*dz - (nz-1)*dz/2
+    xabs = np.abs(x)
+    yabs = np.abs(y)
+    zabs = np.abs(z)
+    x_grid, y_grid, z_grid = np.meshgrid(xabs,yabs,zabs)
+    return x_grid, y_grid, z_grid
+
+def spherical_density(n,l,m,r_max_A=3,nr=100,ntheta=72,nphi=36,Z=1,N_neut=0):
 
     dtheta = 360./ntheta
     dphi = 180./nphi
@@ -44,11 +45,8 @@ def spherical_density(r_max_A=3,nr=100,ntheta=72,nphi=36,Z=1,n=1,l=0,m=0):
 
     # these arrays define the voxel centers
     th_deg = np.arange(float(dtheta)/2,360,dtheta)
-    print(len(th_deg))
     ph_deg = np.arange(float(dphi)/2,180,dphi)
-    print(len(ph_deg))
     r_A = np.arange(float(r_step_A)/2,r_max_A,r_step_A)
-    print(len(r_A))
 
     # various conversions etc
     th_rad = th_deg*np.pi/180 
@@ -65,12 +63,13 @@ def spherical_density(r_max_A=3,nr=100,ntheta=72,nphi=36,Z=1,n=1,l=0,m=0):
     lag_of_r = lagpoly(2*Zr_a0/n)
 
     # bohr_rad_A has units of Angstrom --> Rnl has units of Angstrom^(-3/2)
-    Rnl = np.array(
-    np.sqrt( (2*Z/float(n*bohr_rad_A))**3 * fact(n-l-1) / (2*n*fact(n+l)) )
-    * np.exp(-1*Zr_a0/n)
-    * (2*Zr_a0/n)**l 
-    * lag_of_r
-    )
+    Rnl = radial_wf(n,l,r_A,Z,N_neut)
+    #Rnl = np.array(
+    #np.sqrt( (2*Z/float(n*bohr_rad_A))**3 * fact(n-l-1) / (2*n*fact(n+l)) )
+    #* np.exp(-1*Zr_a0/n)
+    #* (2*Zr_a0/n)**l 
+    #* lag_of_r
+    #)
 
     # spherical harmonic for m,l:
     Ylm = sph_harm(m,l,th_grid,ph_grid)
@@ -87,13 +86,28 @@ def spherical_density(r_max_A=3,nr=100,ntheta=72,nphi=36,Z=1,n=1,l=0,m=0):
     P_spherical = np.array(np.abs(psi*np.conj(psi)),dtype=float)
     PV_spherical = np.array(P_spherical*V_r_th_ph,dtype=float)
 
+    return 
+
     r_th_ph_PV = []
-    for ir,Zri in zip(range(len(Zr_A)),Zr_A):
-        for ith,thi in zip(range(len(th_deg)),th_deg):
-            for iph,phi in zip(range(len(ph_deg)),ph_deg):
-                r_th_ph_PV.append([Zri,thi,phi,PV_spherical[ir,ith,iph]]) 
+    for ir,ri in enumerate(r_A):
+        for ith,thi in enumerate(th_deg):
+            for iph,phi in enumerate(ph_deg):
+                r_th_ph_PV.append([ri,thi,phi,PV_spherical[ir,ith,iph]]) 
     return r_th_ph_PV
 
+def pack_cartesian_data(x_grid,y_grid,z_grid,PV):
+    ijk_xyz_PV = []
+    for ix,xi in enumerate(x_grid[0,:,0]):
+        for iy,yi in enumerate(y_grid[:,0,0]):
+            for iz,zi in enumerate(z_grid[0,0,:]):
+                ijk_xyz_PV.append([ix,iy,iz,xi,yi,zi,PV[ix,iy,iz]])
+    return ijk_xyz_PV
+
 def write_cartesian(ijk_xyz_PV,fpath):
-    np.savetxt(fpath,np.array(ijk_xyz_PV),fmt='%i, %i, %i, %.3e, %.3e, %.3e, %.12e',header='ix, iy, iz, Z*x [A], Z*y [A], Z*z [A], PV [e]')
+    np.savetxt(
+        fpath,
+        np.array(ijk_xyz_PV),
+        fmt='%i, %i, %i, %.3e, %.3e, %.3e, %.12e',
+        header='ix, iy, iz, x [A], y [A], z [A], PV [e]'
+        )
 
