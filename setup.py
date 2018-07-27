@@ -8,7 +8,7 @@ longdesc = 'Current capabilities: '\
     '\n - Plot (and provide polygon data) for real-space density isosurfaces of any value'
 
 setup(name='hwaves',
-    version='0.0.2',
+    version='0.0.3',
     url='https://github.com/lensonp/hwaves.git',
     description='Compute and plot hydrogenic wavefunctions',
     long_description=longdesc,
