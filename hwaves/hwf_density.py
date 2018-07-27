@@ -111,3 +111,11 @@ def write_cartesian(ijk_xyz_PV,fpath):
         header='ix, iy, iz, x [A], y [A], z [A], PV [e]'
         )
 
+def write_radial_wf(r_A,Rnl,Rnlsqr,Pnl,fpath):
+    np.savetxt(
+        fpath,
+        np.array([r_A,Rnl,Rnlsqr,Pnl]).T,
+        fmt='%f, %.5e, %.5e, %.5e',
+        header='r [A], Rnl [A^(-3/2)], Rnl**2 [A**-3], Pnl [A**-1]'
+        )
+

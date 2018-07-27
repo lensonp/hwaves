@@ -90,17 +90,17 @@ def radial_density(n,l,r_A,Z=1,N_neut=0):
     Rnl = radial_wf(n,l,r_A,Z,N_neut)
     # Rnl has units of Angstrom^(-3/2)
     # Rnlsqr has units Angstrom^(-3): density per volume 
-    return Rnl * Rnl
+    return Rnl, Rnl * Rnl
 
 def radial_probability(n,l,r_A,Z=1,N_neut=0):   
-    Rnlsqr = radial_density(n,l,r_A,Z,N_neut)
+    Rnl, Rnlsqr = radial_density(n,l,r_A,Z,N_neut)
     # Rnlsqr has units Angstrom^(-3): density per volume 
     # Pnl has units Angstrom^(-1): spherical-shell integrated density per radius
     Pnl = Rnlsqr * 4 * np.pi * r_A**2  
-    return Pnl
+    return Rnl, Rnlsqr, Pnl
 
 def radial_wf_integral(n,l,r_A,Z=1,N_neut=0):
-    Pnl = radial_probability(n,l,r_A,Z,N_neut)
+    Rnl, Rnlsqr, Pnl = radial_probability(n,l,r_A,Z,N_neut)
     return np.sum(Pnl) * max(r_A) / len(r_A)
 
 def psi_xyz(n,l,m,x_grid,y_grid,z_grid,Z=1,N_neut=0):
@@ -127,6 +127,8 @@ def real_wf_xyz(designation,x_grid,y_grid,z_grid,Z=1,N_neut=0):
         return wf_func(3,0,0)
     if designation == '4s':
         return wf_func(4,0,0)
+    if designation == '5s':
+        return wf_func(5,0,0)
     if '2p' in designation:
         if designation == '2pz': return wf_func(2,1,0) 
         psi_211 = wf_func(2,1,1)  
@@ -145,6 +147,12 @@ def real_wf_xyz(designation,x_grid,y_grid,z_grid,Z=1,N_neut=0):
         psi_41m1 = wf_func(4,1,-1)  
         if designation == '4px': return 1./np.sqrt(2) * (psi_411 + psi_41m1)
         if designation == '4py': return 1./(1j*np.sqrt(2)) * (psi_411 - psi_41m1)
+    if '5p' in designation:
+        if designation == '5pz': return wf_func(5,1,0) 
+        psi_511 = wf_func(5,1,1)  
+        psi_51m1 = wf_func(5,1,-1)  
+        if designation == '5px': return 1./np.sqrt(2) * (psi_511 + psi_51m1)
+        if designation == '5py': return 1./(1j*np.sqrt(2)) * (psi_511 - psi_51m1)
     if '3d' in designation:
         if designation == '3dz2': return wf_func(3,2,0) 
         if 'xz' in designation or 'yz' in designation:

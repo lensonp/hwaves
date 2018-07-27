@@ -6,7 +6,7 @@ from mpl_toolkits.mplot3d import Axes3D
 #from mayavi import mlab
 from skimage import measure
 
-from .hwf import spherical_harmonic, radial_wf
+from .hwf import spherical_harmonic, radial_probability
 from .hwf_density import real_wf_cartesian_density, cartesian_density
 
 bohr_rad_A = 0.529177       #Angstrom
@@ -35,9 +35,7 @@ def plot_radial_wf(n,l,r_A,Z=1,N_neut=0,showplot=False):
     #
     # r_A is an array
     #
-    Rnl = radial_wf(n,l,r_A,Z,N_neut)
-    Rnlsqr = Rnl * Rnl
-    Pnl = Rnlsqr * 4 * np.pi * r_A**2 
+    Rnl,Rnlsqr,Pnl = radial_probability(n,l,r_A,Z,N_neut)
 
     fig = plt.figure()
     ax = fig.gca()
