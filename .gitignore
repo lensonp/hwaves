@@ -5,4 +5,6 @@
 *.png
 *.swp
 *.egg-info
+build
+dist
 .pytest_cache
