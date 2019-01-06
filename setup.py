@@ -9,7 +9,7 @@ longdesc = 'Current capabilities: '\
 
 setup(
     name='hwaves',
-    version='0.0.1',
+    version='0.0.3',
     url='https://github.com/lensonp/hwaves.git',
     description='Compute and plot hydrogenic wavefunctions',
     long_description=longdesc,
