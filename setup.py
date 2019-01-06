@@ -1,11 +1,11 @@
 from setuptools import setup, find_packages
 
 longdesc = 'Current capabilities: '\
-    '\n - Compute and plot radial wavefunctions for any n, l'\
-    '\n - Compute and plot spherical harmonics for any l, m'\
-    '\n - Compute real-space density of hydrogenic eigenfunctions for any n, m, l'\
-    '\n - Compute real-space density of real-valued wavefunctions (1s, 2p, 3dx2-y2, etc.)'\
-    '\n - Plot (and provide polygon data) for real-space density isosurfaces of any value'
+    'Compute and plot radial wavefunction density; '\
+    'Compute and plot spherical harmonics; '\
+    'Compute real-space density of hydrogenic eigenfunctions; '\
+    'Compute real-space density of real-valued wavefunctions; '\
+    'Plot (and provide polygon data) for real-space density isosurfaces of any value'
 
 setup(
     name='hwaves',
