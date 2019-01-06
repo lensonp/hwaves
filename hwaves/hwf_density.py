@@ -31,10 +31,11 @@ def voxel_center_grid(nx,ny,nz,dx,dy,dz):
     x = np.arange(nx)*dx - (nx-1)*dx/2
     y = np.arange(ny)*dy - (ny-1)*dy/2
     z = np.arange(nz)*dz - (nz-1)*dz/2
-    xabs = np.abs(x)
-    yabs = np.abs(y)
-    zabs = np.abs(z)
-    x_grid, y_grid, z_grid = np.meshgrid(xabs,yabs,zabs)
+    #xabs = np.abs(x)
+    #yabs = np.abs(y)
+    #zabs = np.abs(z)
+    #x_grid, y_grid, z_grid = np.meshgrid(xabs,yabs,zabs)
+    x_grid, y_grid, z_grid = np.meshgrid(x,y,z)
     return x_grid, y_grid, z_grid
 
 def spherical_density(n,l,m,r_max_A=3,nr=100,ntheta=72,nphi=36,Z=1,N_neut=0):
