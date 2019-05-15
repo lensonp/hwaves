@@ -70,16 +70,53 @@ def plot_isosurface(n,l,m,nx,ny,nz,dx,dy,dz,isolevel=None,Z=1,N_neut=0,showplot=
     x_grid,y_grid,z_grid,PV = cartesian_density(n,l,m,nx,ny,nz,dx,dy,dz,Z,N_neut)
     if not isolevel:
         isolevel = 0.3*np.max(PV)
-    make_isosurf(PV,isolevel,dx,dy,dz,showplot)
+    plot_isosurf(PV,isolevel,dx,dy,dz,showplot)
 
-def plot_real_wf_isosurface(designation,nx,ny,nz,dx,dy,dz,isolevel=None,Z=1,N_neut=0,showplot=False):
-    x_grid,y_grid,z_grid,PV = real_wf_cartesian_density(designation,nx,ny,nz,dx,dy,dz,Z,N_neut)
+def plot_real_wf_isosurface(n,l,absm,plusminus,nx,ny,nz,dx,dy,dz,isolevel=None,Z=1,N_neut=0,showplot=False):
+    x_grid,y_grid,z_grid,PV = real_wf_cartesian_density(n,l,absm,plusminus,nx,ny,nz,dx,dy,dz,Z,N_neut)
     if not isolevel:
         isolevel = 0.3*np.max(PV)
-    make_isosurf(PV,isolevel,dx,dy,dz,showplot)
+    plot_isosurf(PV,isolevel,dx,dy,dz,showplot)
 
-def make_isosurf(PV,isolevel,dx,dy,dz,showplot):
+def write_real_wf_isosurface(obj_file_path,n,l,absm,plusminus,nx,ny,nz,dx,dy,dz,isolevel=None,Z=1,N_neut=0):
+    x_grid,y_grid,z_grid,PV = real_wf_cartesian_density(n,l,absm,plusminus,nx,ny,nz,dx,dy,dz,Z,N_neut)
     verts, faces, norms, vals = measure.marching_cubes_lewiner(PV, isolevel, spacing=(dx,dy,dz))   
+    with open(obj_file_path,'w') as objf:
+        objf.write('mtllib test.mtl\n')
+        objf.write('# VERTICES\n')
+        vmeanx = np.mean(verts[:,0]) 
+        vmeany = np.mean(verts[:,1]) 
+        vmeanz = np.mean(verts[:,2]) 
+        for v in verts:
+            objf.write('v {:.4f} {:.4f} {:.4f} 1.\n'.format(v[0]-vmeanx,v[1]-vmeany,v[2]-vmeanz))
+        # We may want to define textures at some point
+        #objf.write('# TEXTURE COORDINATES\n')
+        #objf.write('vt 0.3 0.5\n')
+        #objf.write('vt 0.6 0.5\n')
+        #objf.write('vt 0.9 0.5\n')
+        #vert_tx_map = [] 
+        #for iv in range(len(verts)):
+        #    vert_tx_map.append(np.mod(iv,3)+1)
+        objf.write('# VERTEX NORMALS\n')
+        for vn in norms:
+            objf.write('vn {:.4f} {:.4f} {:.4f}\n'.format(vn[0],vn[1],vn[2]))
+        objf.write('usemtl test\n')
+        objf.write('# FACES\n')
+        for f in faces:
+            fpp = f+1
+            objf.write('f {}//{} {}//{} {}//{}\n'.format(fpp[0],fpp[0],fpp[1],fpp[1],fpp[2],fpp[2]))
+            #objf.write('f {}/1/{} {}/2/{} {}/3/{}\n'.format(f[0],f[0],f[1],f[1],f[2],f[2]))
+            #objf.write('f {}/{}/{} {}/{}/{} {}/{}/{}\n'.format(
+            #    fpp[0],vert_tx_map[f[0]],fpp[0],
+            #    fpp[1],vert_tx_map[f[1]],fpp[1],
+            #    fpp[2],vert_tx_map[f[2]],fpp[2]))
+
+def get_isosurf_geometry(PV,isolevel,dx,dy,dz):
+    verts, faces, norms, vals = measure.marching_cubes_lewiner(PV, isolevel, spacing=(dx,dy,dz))   
+    return verts, faces, norms, vals
+
+def plot_isosurf(PV,isolevel,dx,dy,dz,showplot):
+    verts, faces, norms, vals = get_isosurf_geometry(PV,isolevel,dx,dy,dz)
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     ax.plot_trisurf(verts[:, 0], verts[:,1], faces, verts[:, 2], cmap='Spectral', lw=1)
@@ -90,7 +127,4 @@ def make_isosurf(PV,isolevel,dx,dy,dz,showplot):
 def plot_scatter():
     # TODO: take volumetric data, plot a 3d scatter
     pass
-
-
-
 
