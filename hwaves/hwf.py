@@ -4,8 +4,49 @@ import numpy as np
 from scipy.special import sph_harm 
 from scipy.special import genlaguerre 
 from scipy.misc import factorial as fact
+from scipy.optimize import minimize as scipimin
+
 #from masstable import Table
 #import periodictable as pt
+
+quantum_numbers_map = {
+    '1s':(1,0,0,None),
+    '2s':(2,0,0,None),
+    '3s':(3,0,0,None),
+    '4s':(4,0,0,None),
+    '5s':(5,0,0,None),
+    '6s':(6,0,0,None),
+    '7s':(7,0,0,None),
+    '2pz':(2,1,0,None),
+    '2px':(2,1,1,'+'),
+    '2py':(2,1,1,'-'),
+    '3pz':(3,1,0,None),
+    '3px':(3,1,1,'+'),
+    '3py':(3,1,1,'-'),
+    '4pz':(4,1,0,None),
+    '4px':(4,1,1,'+'),
+    '4py':(4,1,1,'-'),
+    '5pz':(5,1,0,None),
+    '5px':(5,1,1,'+'),
+    '5py':(5,1,1,'-'),
+    '3dz2':(3,2,0,None),
+    '3dxz':(3,2,1,'+'),
+    '3dyz':(3,2,1,'-'),
+    '3dxy':(3,2,2,'+'),
+    '3dx2-y2':(3,2,2,'-'),
+    '4dz2':(4,2,0,None),
+    '4dxz':(4,2,1,'+'),
+    '4dyz':(4,2,1,'-'),
+    '4dxy':(4,2,2,'+'),
+    '4dx2-y2':(4,2,2,'-'),
+    '4fz3':(4,3,0,None),
+    '4fxz2':(4,3,1,'+'),
+    '4fyz2':(4,3,1,'-'),
+    '4fxyz':(4,3,2,'+'),
+    '4fz(x2-y2)':(4,3,2,'-'),
+    '4fx(x2-3y2)':(4,3,3,'+'),
+    '4fy(3x2-y2)':(4,3,3,'-'),
+    }
 
 bohr_rad_A = 0.529177       #Angstrom
 elec_mass_amu = 5.485799090 #amu
@@ -86,6 +127,12 @@ def radial_wf(n,l,r_A,Z=1,N_neut=0):
 
     return Rnl
 
+#def solve_isolevel(n,l,enc_chg,Z=1,N_neut=0):
+#    enc_chg_diffsqr = lambda r : (radial_wf_integral(n,l,np.linspace(0,r,50),Z,N_neut)-enc_chg)**2
+#    r_opt = scipimin(enc_chg_diffsqr,1.)
+#    import pdb; pdb.set_trace()
+#    return r_opt.x[0]
+
 def radial_density(n,l,r_A,Z=1,N_neut=0):
     Rnl = radial_wf(n,l,r_A,Z,N_neut)
     # Rnl has units of Angstrom^(-3/2)
@@ -118,81 +165,22 @@ def psi_xyz(n,l,m,x_grid,y_grid,z_grid,Z=1,N_neut=0):
     return Rnl * Ylm
 
 def real_wf_xyz(designation,x_grid,y_grid,z_grid,Z=1,N_neut=0):
-    wf_func = lambda n,l,m: psi_xyz(n,l,m,x_grid,y_grid,z_grid,Z,N_neut)
-    if designation == '1s':
-        return wf_func(1,0,0)
-    if designation == '2s':
-        return wf_func(2,0,0)
-    if designation == '3s':
-        return wf_func(3,0,0)
-    if designation == '4s':
-        return wf_func(4,0,0)
-    if designation == '5s':
-        return wf_func(5,0,0)
-    if '2p' in designation:
-        if designation == '2pz': return wf_func(2,1,0) 
-        psi_211 = wf_func(2,1,1)  
-        psi_21m1 = wf_func(2,1,-1)  
-        if designation == '2px': return 1./np.sqrt(2) * (psi_211 + psi_21m1)
-        if designation == '2py': return 1./(1j*np.sqrt(2)) * (psi_211 - psi_21m1)
-    if '3p' in designation:
-        if designation == '3pz': return wf_func(3,1,0) 
-        psi_311 = wf_func(3,1,1)  
-        psi_31m1 = wf_func(3,1,-1)  
-        if designation == '3px': return 1./np.sqrt(2) * (psi_311 + psi_31m1)
-        if designation == '3py': return 1./(1j*np.sqrt(2)) * (psi_311 - psi_31m1)
-    if '4p' in designation:
-        if designation == '4pz': return wf_func(4,1,0) 
-        psi_411 = wf_func(4,1,1)  
-        psi_41m1 = wf_func(4,1,-1)  
-        if designation == '4px': return 1./np.sqrt(2) * (psi_411 + psi_41m1)
-        if designation == '4py': return 1./(1j*np.sqrt(2)) * (psi_411 - psi_41m1)
-    if '5p' in designation:
-        if designation == '5pz': return wf_func(5,1,0) 
-        psi_511 = wf_func(5,1,1)  
-        psi_51m1 = wf_func(5,1,-1)  
-        if designation == '5px': return 1./np.sqrt(2) * (psi_511 + psi_51m1)
-        if designation == '5py': return 1./(1j*np.sqrt(2)) * (psi_511 - psi_51m1)
-    if '3d' in designation:
-        if designation == '3dz2': return wf_func(3,2,0) 
-        if 'xz' in designation or 'yz' in designation:
-            psi_321 = wf_func(3,2,1) 
-            psi_32m1 = wf_func(3,2,-1)  
-            if designation == '3dxz': return 1./np.sqrt(2) * (psi_321 + psi_32m1)
-            if designation == '3dyz': return 1./(1j*np.sqrt(2)) * (psi_321 - psi_32m1)
-        if 'xy' in designation or 'x2-y2' in designation:
-            psi_322 = wf_func(3,2,2)  
-            psi_32m2 = wf_func(3,2,-2)  
-            if designation == '3dxy': return 1./np.sqrt(2) * (psi_322 + psi_32m2)
-            if designation == '3dx2-y2': return 1./(1j*np.sqrt(2)) * (psi_322 - psi_32m2)
-    if '4d' in designation:
-        if designation == '4dz2': return wf_func(4,2,0) 
-        if 'xz' in designation or 'yz' in designation:
-            psi_421 = wf_func(4,2,1) 
-            psi_42m1 = wf_func(4,2,-1)  
-            if designation == '4dxz': return 1./np.sqrt(2) * (psi_421 + psi_42m1)
-            if designation == '4dyz': return 1./(1j*np.sqrt(2)) * (psi_421 - psi_42m1)
-        if 'xy' in designation or 'x2-y2' in designation:
-            psi_422 = wf_func(4,2,2)  
-            psi_42m2 = wf_func(4,2,-2)  
-            if designation == '4dxy': return 1./np.sqrt(2) * (psi_422 + psi_42m2)
-            if designation == '4dx2-y2': return 1./(1j*np.sqrt(2)) * (psi_422 - psi_42m2)
-    if '4f' in designation:
-        if designation == '4fz3': return wf_func(4,3,0) 
-        if 'xz2' in designation or 'yz2' in designation:
-            psi_431 = wf_func(4,3,1) 
-            psi_43m1 = wf_func(4,3,-1)  
-            if designation == '4fxz2': return 1./np.sqrt(2) * (psi_431 + psi_43m1)
-            if designation == '4fyz2': return 1./(1j*np.sqrt(2)) * (psi_431 - psi_43m1)
-        if 'xyz' in designation or 'z(x2-y2)' in designation:
-            psi_432 = wf_func(4,3,2)  
-            psi_43m2 = wf_func(4,3,-2)  
-            if designation == '4fxyz': return 1./np.sqrt(2) * (psi_432 + psi_43m2)
-            if designation == '4fz(x2-y2)': return 1./(1j*np.sqrt(2)) * (psi_432 - psi_43m2)
-        if 'x(x2-3y2)' in designation or 'y(3x2-y2)' in designation:
-            psi_433 = wf_func(4,3,3)  
-            psi_43m3 = wf_func(4,3,-3)  
-            if designation == '4fx(x2-3y2)': return 1./np.sqrt(2) * (psi_433 + psi_43m3)
-            if designation == '4fy(3x2-y2)': return 1./(1j*np.sqrt(2)) * (psi_433 - psi_43m3)
+    n,l,absm,pm = quantum_numbers_map[designation]
+    return real_wf_nlm_xyz(n,l,absm,pm,x_grid,y_grid,z_grid,Z,N_neut)
 
+def real_wf_nlm_xyz(n,l,absm,plusminus,x_grid,y_grid,z_grid,Z=1,N_neut=0):
+    wf_func = lambda nn,ll,mm: psi_xyz(nn,ll,mm,x_grid,y_grid,z_grid,Z,N_neut)
+    if absm<0:
+        raise ValueError('The absm argument was {}- must be greater than or equal to zero'.format(absm))
+    if absm==0:
+        return wf_func(n,l,absm)
+    else:
+        psi_mpos = wf_func(n,l,absm)
+        psi_mneg = wf_func(n,l,-1*absm)
+        if plusminus == '+':
+            return 1./np.sqrt(2) * (psi_mpos + psi_mneg)
+        elif plusminus == '-':
+            return 1./(1j*np.sqrt(2)) * (psi_mpos - psi_mneg)
+        else:
+            raise ValueError('The plusminus argument was {}- must be either "+" or "-".'.format(plusminus))
 

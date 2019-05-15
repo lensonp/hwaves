@@ -6,12 +6,12 @@ from scipy.special import sph_harm
 from scipy.special import genlaguerre 
 from scipy.misc import factorial as fact
 
-from .hwf import real_wf_xyz, psi_xyz, radial_wf, bohr_rad_A, elec_mass_amu
+from .hwf import real_wf_nlm_xyz, psi_xyz, radial_wf, bohr_rad_A, elec_mass_amu
 
-def real_wf_cartesian_density(designation,nx,ny,nz,dx,dy,dz,Z=1,N_neut=0):
+def real_wf_cartesian_density(n,l,absm,plusminus,nx,ny,nz,dx,dy,dz,Z=1,N_neut=0):
     vol = dx * dy * dz
     x_grid, y_grid, z_grid = voxel_center_grid(nx,ny,nz,dx,dy,dz)
-    psi_cart = real_wf_xyz(designation,x_grid,y_grid,z_grid,Z,N_neut)
+    psi_cart = real_wf_nlm_xyz(n,l,absm,plusminus,x_grid,y_grid,z_grid,Z,N_neut)
     P_cart = np.array(np.abs(psi_cart*np.conj(psi_cart)),dtype=float)
     # multiply by voxel volume
     PV_cart = np.array(P_cart*vol,dtype=float)
