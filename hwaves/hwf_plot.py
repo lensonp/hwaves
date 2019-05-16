@@ -1,7 +1,7 @@
 import os
 
 import numpy as np
-import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 #from mayavi import mlab
 from skimage import measure
@@ -38,23 +38,23 @@ def plot_radial_wf(n,l,r_A,Z=1,N_neut=0,showplot=False):
     Rnl,Rnlsqr,Pnl = radial_probability(n,l,r_A,Z,N_neut)
 
     fig = plt.figure()
-    ax = fig.gca()
-    ax.plot(Z*r_A,Rnl)
-    ax.set_xlabel('Z*r (Angstrom)')
-    ax.set_ylabel('Rnl')
+    #plt = fig.gca()
+    plt.plot(Z*r_A,Rnl)
+    plt.xlabel('Z*r (Angstrom)')
+    #ax.set_ylabel('Rnl')
 
-    fig = plt.figure()
-    ax = fig.gca()
-    ax.plot(Z*r_A,Rnlsqr)
-    ax.set_xlabel('Z*r (Angstrom)')
-    ax.set_ylabel('Rnl**2')
+    #fig = plt.figure()
+    #ax = fig.gca()
+    plt.plot(Z*r_A,Rnlsqr)
+    #ax.set_xlabel('Z*r (Angstrom)')
+    #ax.set_ylabel('Rnl**2')
 
-    fig = plt.figure()
-    ax = fig.gca()
-    ax.plot(Z*r_A,Pnl)
-    ax.set_xlabel('Z*r (Angstrom)')
-    ax.set_ylabel('Pnl')
-
+    #fig = plt.figure()
+    #ax = fig.gca()
+    plt.plot(Z*r_A,Pnl)
+    #ax.set_xlabel('Z*r (Angstrom)')
+    #ax.set_ylabel('Pnl')
+    plt.legend(['Rnl [A^(-3/2)]','Rnl**2 [A^-3]','Pnl [A^-1]'])
     if showplot:
         plt.show()
     return fig
@@ -112,6 +112,8 @@ def write_real_wf_isosurface(obj_file_path,n,l,absm,plusminus,nx,ny,nz,dx,dy,dz,
             #    fpp[2],vert_tx_map[f[2]],fpp[2]))
 
 def get_isosurf_geometry(PV,isolevel,dx,dy,dz):
+    print('range of PV: {} to {}'.format(np.min(PV),np.max(PV)))
+    print('isolevel: {}'.format(isolevel))
     verts, faces, norms, vals = measure.marching_cubes_lewiner(PV, isolevel, spacing=(dx,dy,dz))   
     return verts, faces, norms, vals
 
