@@ -3,7 +3,7 @@ import os
 import numpy as np
 from scipy.special import sph_harm 
 from scipy.special import genlaguerre 
-from scipy.misc import factorial as fact
+from scipy.special import factorial as fact
 from scipy.optimize import minimize as scipimin
 
 #from masstable import Table
@@ -120,18 +120,41 @@ def radial_wf(n,l,r_A,Z=1,N_neut=0):
 
     # a_mu has units of Angstrom --> Rnl has units of Angstrom^(-3/2)
     Rnl = np.array(
-    np.sqrt( (2*Z/float(n*a_mu))**3 * fact(n-l-1) / (2*n*fact(n+l)) )
-    * np.exp(-1*Zr_a_mu/n)
-    * (2*Zr_a_mu/n)**l 
-    * lag_of_r)
-
+        np.sqrt( (2*Z/float(n*a_mu))**3 * fact(n-l-1) / (2*n*fact(n+l)) )
+        * np.exp(-1*Zr_a_mu/n)
+        * (2*Zr_a_mu/n)**l 
+        * lag_of_r
+        / (2*np.sqrt(np.pi))
+        )
+    
     return Rnl
 
-#def solve_isolevel(n,l,enc_chg,Z=1,N_neut=0):
-#    enc_chg_diffsqr = lambda r : (radial_wf_integral(n,l,np.linspace(0,r,50),Z,N_neut)-enc_chg)**2
-#    r_opt = scipimin(enc_chg_diffsqr,1.)
-#    import pdb; pdb.set_trace()
-#    return r_opt.x[0]
+def enc_chg_diffsqr(n,l,enc_chg,Z,N_neut,r):
+    integ = radial_wf_integral(n,l,np.linspace(0.,r,500).ravel(),Z,N_neut)
+    diffsqr = (integ-enc_chg)**2
+    return diffsqr
+
+def enclosed_density_radius(n,l,enc_chg,Z=1,N_neut=0):
+    enc_chg_diffsqr = lambda r : (radial_wf_integral(n,l,np.linspace(0,r,1000),Z,N_neut)-enc_chg)**2
+
+    r0 = 0.
+    ec_r0 = 0.
+    while ec_r0<enc_chg:
+        r0 += 0.1
+        ec_r0 = radial_wf_integral(n,l,np.linspace(0,r0,1000),Z,N_neut)
+
+    opt = scipimin(enc_chg_diffsqr,r0)
+
+    ### DBG
+    #Rnl,Rnlsqr,isolev = radial_probability(n,l,opt.x[0],Z,N_neut)
+    #from hwaves import hwf_plot
+    #from matplotlib import pyplot as plt
+    #fig = hwf_plot.plot_radial_wf(n,l,np.linspace(0,10,1000),showplot=False)
+    #plt.plot([opt.x[0]],[isolev],'g*')
+    #plt.show()
+    #######
+
+    return opt.x[0]
 
 def radial_density(n,l,r_A,Z=1,N_neut=0):
     Rnl = radial_wf(n,l,r_A,Z,N_neut)
@@ -143,12 +166,18 @@ def radial_probability(n,l,r_A,Z=1,N_neut=0):
     Rnl, Rnlsqr = radial_density(n,l,r_A,Z,N_neut)
     # Rnlsqr has units Angstrom^(-3): density per volume 
     # Pnl has units Angstrom^(-1): spherical-shell integrated density per radius
+    # TODO: figure out whether or not the 4*pi term belongs here
+    # ... if so, then the Rnlsqr scaling factor has to change accordingly 
     Pnl = Rnlsqr * 4 * np.pi * r_A**2  
+    #Pnl = Rnlsqr * r_A**2  
     return Rnl, Rnlsqr, Pnl
 
 def radial_wf_integral(n,l,r_A,Z=1,N_neut=0):
     Rnl, Rnlsqr, Pnl = radial_probability(n,l,r_A,Z,N_neut)
-    return np.sum(Pnl) * max(r_A) / len(r_A)
+    # we assume that max(r)/(len(r)-1) = dr
+    integ = np.sum(Pnl) * np.max(r_A) / (r_A.shape[0]-1)
+    #print(integ) 
+    return integ
 
 def psi_xyz(n,l,m,x_grid,y_grid,z_grid,Z=1,N_neut=0):
     lag = genlaguerre(n-l-1,2*l+1)
@@ -156,8 +185,6 @@ def psi_xyz(n,l,m,x_grid,y_grid,z_grid,Z=1,N_neut=0):
     Zr_a0 = Z*r_grid/bohr_rad_A
     #lag_of_r = lag(2*Zr_a0/n)
     Rnl = radial_wf(n,l,r_grid,Z,N_neut)
-    #Rnl = np.sqrt( (2*Z/float(n*bohr_rad_A))**3 * fact(n-l-1) / (2*n*fact(n+l)) ) \
-    #        * np.exp(-1*Zr_a0/n) * (2*Zr_a0/n)**l * lag_of_r
     th_grid = np.arctan(y_grid/x_grid)
     ph_grid = np.arctan(np.sqrt(x_grid**2+y_grid**2)/z_grid)
     #th_grid, ph_grid = np.meshgrid(th,ph)
