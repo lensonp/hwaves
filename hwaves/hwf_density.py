@@ -4,7 +4,7 @@ import numpy as np
 from scipy import special
 from scipy.special import sph_harm 
 from scipy.special import genlaguerre 
-from scipy.misc import factorial as fact
+from scipy.special import factorial as fact
 
 from .hwf import real_wf_nlm_xyz, psi_xyz, radial_wf, bohr_rad_A, elec_mass_amu
 
